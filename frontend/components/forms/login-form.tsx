@@ -23,7 +23,6 @@ import { loginFormSchema } from "@/zod/login";
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/lib/auth";
 
 export function LoginForm({
   className,
@@ -47,7 +46,7 @@ export function LoginForm({
       setError('')
      const response = await axios.post('api/auth/login',data);
      localStorage.setItem('fullname',response.data.fullname)
-   router.replace('/')
+   router.replace(`${response.data.role}/dashboard`)
   
      
    }
@@ -123,7 +122,7 @@ export function LoginForm({
               {error && <p className="p-2 bg-red-100 text-red-600">{error}</p>}
               <Field>
                 <Button type="submit" className="h-10">
-                  Login
+                 { logging ? 'Logging in...' : 'Login'}
                 </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <a href="#">Sign up</a>

@@ -6,10 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request:NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get(REFRESH_TOKEN_NAME)?.value
-    if(!token){
-        return NextResponse.json({error:"Token not found"},{status:401})
-    }
-    else{
+   
         try{
             const response = await axios.post(`${DJANGO_BASE_URL}/api/token/refresh/`,{refresh:token});
             const {access,refresh} = response.data;
@@ -41,4 +38,3 @@ export async function GET(request:NextRequest) {
            return res
         }
     }
-}
