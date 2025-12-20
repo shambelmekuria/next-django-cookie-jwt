@@ -133,7 +133,7 @@ def password_reset_request(request):
         return Response({"message": "The Passord Reset link sent successfully, check spam email"}, status=status.HTTP_200_OK,)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Password Reset Confirm
+# Password Reset Confirm API
 @api_view(["POST"])
 def password_reset_confirm(request):
     serializer = PasswordRestConfirmSerializer(data=request.data)
