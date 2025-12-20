@@ -146,7 +146,7 @@ def password_reset_confirm(request):
         except User.DoesNotExist:
             return Response({'message': "User not found"}, status=status.HTTP_404_NOT_FOUND)
         if not default_token_generator.check_token(user, token):
-            return Response({'message': 'Invalid Token'})
+            return Response({'message': 'Invalid Token'},status=status.HTTP_400_BAD_REQUEST)
         user.set_password(new_password)
         user.save()
         return Response({'message': 'Password Change Successfully'}, status=status.HTTP_200_OK)
