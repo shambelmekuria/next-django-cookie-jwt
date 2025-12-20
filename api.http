@@ -10,8 +10,8 @@ POST http://127.0.0.1:8000/api/users/create/
 Content-Type: application/json
 
 {
-  "username": "sham",
-  "email": "shambelmekuria2022@gmail.com",
+  "username": "shamdev",
+  "email": "shambelmekuriya2023@gmail.com",
   "password": "test",
   "first_name": "shambel",
   "last_name": "mekuria",
@@ -23,8 +23,8 @@ POST http://127.0.0.1:8000/api/token/ HTTP/1.1
 Content-Type: application/json
 
 {
-    "username": "johndoe",
-    "password": "123"
+    "username": "shamdev",
+    "password": "test"
 }
 
 ###
@@ -50,7 +50,14 @@ POST http://127.0.0.1:8000/api/users/password-reset/
 Content-Type: application/json
 
 {
-  "email": "shambelmekuria2022@gmail.com"
+  "email": "shambelmekuriya2023@gmail.com"
 }
 ###
-GET http://127.0.0.1:8000/api/users/confirm-password-reset
+POST http://127.0.0.1:8000/api/users/confirm-password-reset/
+Content-Type: application/json
+
+{
+  "token": "d138d5-dc28ee8d8b0bd0baf74ba43dc8c6aaa5",
+  "uid":"NQ",
+  "new_password":"1@9b9c3#"
+}

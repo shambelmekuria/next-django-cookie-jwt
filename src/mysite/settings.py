@@ -129,6 +129,8 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "users.serializers.MyTokenObtainPairSerializer",
 }
 
+# Frontend base URL
+FRONTEND_URL = os.getenv('FRONTEND_URL ')
 
 EMAIL_HOST = "django.core.mail.backends.smtp.EmailBackend"
 # Server config

@@ -18,6 +18,7 @@ from .serializers import (
     UserSerializer,
     ChangePasswordSerializer,
     ResetPasswordSerializer,
+    PasswordRestConfirmSerializer
 )
 
 # Django Contrib for Password Reset
@@ -25,7 +26,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from django.conf import settings
-from .utils import password_reset_token
+from django.contrib.auth.tokens import default_token_generator
 
 
 # Display User Info
@@ -88,7 +89,7 @@ def delete_user(request):
 # Password Change
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def test_passoword_change(request):
+def passoword_change(request):
     if request.method == "POST":
         serializer = ChangePasswordSerializer(request.data)
         if serializer.is_valid():
@@ -114,56 +115,39 @@ def test_passoword_change(request):
 # Passoword Reset
 @api_view(["POST"])
 def password_reset_request(request):
-    if request.method == "POST":
-        serializer = ResetPasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data["email"]
+    serializer = ResetPasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]  
+        try:
             user = User.objects.filter(email=email).first()
-            if user is not None:
-                token = password_reset_token.make_token(user)
-                uid = urlsafe_base64_encode(force_bytes(user.pk))
-                reset_link = (
-                    f"http://localhost:3000/password-reset?uid={uid}&token={token}"
-                )
-            send_mail(
-                subject="Password Reset",
-                message=f"{reset_link}",
-                from_email="shambelmekuria2022@gmail.com",
-                recipient_list=[email],
-            )
-        return Response(
-            {"message": "The Passord Reset link sent successfully, check spam email"},
-            status=status.HTTP_200_OK,
-        )
-    return Response(
-        {"message": "GET request not allowed"},
-        status=status.HTTP_405_METHOD_NOT_ALLOWED,
-    )
+        except User.DoesNotExist:
+            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+       
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_link = f"{settings.FRONTEND_URL}/password-reset?uid={uid}&token={token}"
+        send_mail(
+            subject="Password Reset",
+            message=f"{reset_link}",
+            from_email="shambelmekuria2022@gmail.com", recipient_list=[email])
+        return Response({"message": "The Passord Reset link sent successfully, check spam email"}, status=status.HTTP_200_OK,)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-@api_view(["GET"])
-def confirm_password_reset(request):
-    token = request.GET.get("token")
-    uid = request.GET.get("uid")
-    return Response({"token": token, "uid": uid}, status=status.HTTP_200_OK)
-
-
-# @api_view(["POST"])
-# def password_reset_request(request):
-#     if request.method == "POST":
-#         serializer = ResetPasswordSerializer(request.data)
-#         if serializer.is_valid():
-#             # check if User exist
-#             user = User.objects.filter(serializer.validated_data["email"]).first()
-#             if user:
-#                 uid = urlsafe_base64_decode(force_bytes(user.pk))
-#                 token = password_reset_token.make_token(user)
-#                 reset_link = f"http://127.0.0.1:3000/reset-password?uid={uid}&{token}"
-#                 send_mail(
-#                     subject="Password Reset",
-#                     message=f"Reset Your Password\n{reset_link}",
-#                     from_email=settings.DEFUALT_FROM_EMAIL,
-#                     recipient_list=[user.email],
-#                 )
-#         return Response( {"message": "The Passord Reset link sent successfully, check spam email"},status=status.HTTP_200_OK)
-#     return Response({"message": "GET request not allowed"},status=status.HTTP_405_METHOD_NOT_ALLOWED)
+# Password Reset Confirm
+@api_view(["POST"])
+def password_reset_confirm(request):
+    serializer = PasswordRestConfirmSerializer(data=request.data)
+    if serializer.is_valid():
+        uid = urlsafe_base64_decode(serializer.validated_data['uid']).decode()
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['new_password']
+        try:
+            user = User.objects.get(id=uid)
+        except User.DoesNotExist:
+            return Response({'message': "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not default_token_generator.check_token(user, token):
+            return Response({'message': 'Invalid Token'})
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password Change Successfully'}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

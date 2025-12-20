@@ -4,8 +4,7 @@ from .models import User
 
 # Djago buit-in password Checker
 from django.contrib.auth.password_validation import validate_password
-
-
+from django.contrib.auth.tokens import default_token_generator
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -51,7 +50,7 @@ class PasswordRestConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
     
     # Validate new password
-    def validate_new_password(self,value):
+    def validate_new_password(self,data):
         # Return Validation Error if it is false
-        validate_password(value)
-        return value
+        validate_password(data)
+        return data
