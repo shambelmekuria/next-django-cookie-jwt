@@ -136,7 +136,6 @@ def password_reset_request(request):
 # Password Reset Confirm
 @api_view(["POST"])
 def password_reset_confirm(request):
-    # I am Shambel
     serializer = PasswordRestConfirmSerializer(data=request.data)
     if serializer.is_valid():
         uid = urlsafe_base64_decode(serializer.validated_data['uid']).decode()
