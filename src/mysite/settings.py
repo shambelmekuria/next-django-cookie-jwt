@@ -1,5 +1,8 @@
 from pathlib import Path
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -126,12 +129,16 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "users.serializers.MyTokenObtainPairSerializer",
 }
 
-# Email Config
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = "django.core.mail.backends.smtp.EmailBackend"
+# Server config
+EMAIL_HOST = "smtp.gmail.com"
+EMIAL_PORT = 587 # TLS 587 SSL: 465
+EMAIL_HOST_USER = os.getenv('host_user')
+EMAIL_HOST_PASSWORD = os.getenv('host_password')
+
+# Security
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'shambelmekuria2022@gmail.com'
-EMAIL_HOST_PASSWORD = 'ygjz xkrg qqga zwiu'
-DEFAULT_FROM_EMAIL = 'shambelmekuria2022@gmail.com'
+EMAIL_USE_SSL = False
+#defualt
+DEFAULT_FROM_EMAIL = os.getenv('defualt_from_email')

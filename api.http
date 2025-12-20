@@ -10,11 +10,11 @@ POST http://127.0.0.1:8000/api/users/create/
 Content-Type: application/json
 
 {
-  "username": "johndoe",
-  "email": "johndoe@example.com",
-  "password": "1",
-  "first_name": "John",
-  "last_name": "Doe",
+  "username": "sham",
+  "email": "shambelmekuria2022@gmail.com",
+  "password": "test",
+  "first_name": "shambel",
+  "last_name": "mekuria",
   "role": "admin"
 }
 
@@ -29,7 +29,7 @@ Content-Type: application/json
 
 ###
 GET http://127.0.0.1:8000/api/users/me HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NjMzOTYwLCJpYXQiOjE3NjU2MzM5MDAsImp0aSI6IjZiMWI0YWZjNjZjYzQ2YzY4MzAwOWUyOWIzNDg5OGQ3IiwidXNlcl9pZCI6IjUifQ.1jOYsFaQPmduRqv2as77d2JIdXgJqCuOnNBLrLLBqY4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY2MTQ3OTE0LCJpYXQiOjE3NjYxNDc2MTQsImp0aSI6IjJiYzI4YmM1NTgyYzRlNTJiYjViMTlhOTMxODZmNjdkIiwidXNlcl9pZCI6IjEifQ.eZZ4k0udlBXLr6r3dey68ZrFXBTn2Fu-_aLHawa3Iu4
 
 ###
 DELETE http://127.0.0.1:8000/api/users/delete/
@@ -47,9 +47,10 @@ content-Type: application/json
 
 ###
 POST http://127.0.0.1:8000/api/users/password-reset/
-
-content-Type: application/json
+Content-Type: application/json
 
 {
-  "email":
+  "email": "shambelmekuria2022@gmail.com"
 }
+###
+GET http://127.0.0.1:8000/api/users/confirm-password-reset

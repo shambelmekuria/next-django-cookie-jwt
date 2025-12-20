@@ -42,7 +42,7 @@ class ChangePasswordSerializer(serializers.Serializer):
     
 # Password Reset Request
 class ResetPasswordSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=True)
 
 # Password Reset Confirm
 class PasswordRestConfirmSerializer(serializers.Serializer):
