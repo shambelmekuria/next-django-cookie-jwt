@@ -9,6 +9,8 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
+import { DJANGO_BASE_URL } from "@/config/defualt";
+import axios from "axios";
 
 const passwordResetRequestForm = z.object({
   email: z.email(),
@@ -18,6 +20,7 @@ type passwordResetRequestValue = z.infer<typeof passwordResetRequestForm>;
 
 export default function PasswordReset() {
   const [sending, setSending] = useState(false);
+  const [message,setMessage] = useState('')
   const form = useForm<passwordResetRequestValue>({
     resolver: zodResolver(passwordResetRequestForm),
     defaultValues: {
@@ -25,9 +28,17 @@ export default function PasswordReset() {
     },
   });
 
-  const onSubmit = (data: passwordResetRequestValue) => {
-    console.log("Sent");
-    form.reset()
+  const onSubmit  = async (data: passwordResetRequestValue) => {
+    try{
+      const reset_link= `${DJANGO_BASE_URL}/api/users/password-reset/`
+      const res = await axios.post(reset_link,{data});
+      if (res){
+        console.log(res.data)
+      }
+    }
+    catch{
+
+    }
   };
 
   return (
