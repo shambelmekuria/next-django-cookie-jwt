@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     # thirdparty
     'rest_framework',
     'rest_framework_simplejwt',
+    "corsheaders",
     # myapps
     'users'
 ]
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -144,3 +146,11 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 #defualt
 DEFAULT_FROM_EMAIL = os.getenv('defualt_from_email')
+
+
+# For Frontend
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]

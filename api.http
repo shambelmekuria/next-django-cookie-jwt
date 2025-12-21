@@ -23,8 +23,8 @@ POST http://127.0.0.1:8000/api/token/ HTTP/1.1
 Content-Type: application/json
 
 {
-    "username": "shamdev",
-    "password": "test"
+    "username": "test",
+    "password": "1"
 }
 
 ###
@@ -50,7 +50,7 @@ POST http://127.0.0.1:8000/api/users/password-reset/
 Content-Type: application/json
 
 {
-  "email": "shambelmekuriya2023@gmail.com"
+  "email": "shambelmekuriya2023@gmail.comhhh"
 }
 ###
 POST http://127.0.0.1:8000/api/users/confirm-password-reset/
