@@ -53,7 +53,7 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -97,9 +97,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+#---------------------
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
+#---------------------
 
 LANGUAGE_CODE = 'en-us'
 
@@ -109,21 +109,39 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+#--------------------------------------
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+# ---------------------------------------
 
 STATIC_URL = 'static/'
 
-AUTH_USER_MODEL = 'users.User'
-REST_FRAMEWORK = {
+"""
+Authentication and API Configuration
+Includes custom user model, password reset timeout, JWT settings, and CORS.
+"""
 
+# -----------------------------
+# Authentication Settings
+# -----------------------------
+# Use custom user model
+AUTH_USER_MODEL = 'users.User'
+
+# Password reset token expiration (in seconds)
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
+
+# -----------------------------
+# Django REST Framework (DRF)
+# -----------------------------
+REST_FRAMEWORK = {
+    # Default authentication using JWT
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
-   
 }
 
+# -----------------------------
+# Simple JWT Configuration
+# -----------------------------
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(minutes=60),
@@ -131,26 +149,33 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "users.serializers.MyTokenObtainPairSerializer",
 }
 
-# Frontend base URL
-FRONTEND_URL = os.getenv('FRONTEND_URL ')
-
-EMAIL_HOST = "django.core.mail.backends.smtp.EmailBackend"
-# Server config
-EMAIL_HOST = "smtp.gmail.com"
-EMIAL_PORT = 587 # TLS 587 SSL: 465
-EMAIL_HOST_USER = os.getenv('host_user')
-EMAIL_HOST_PASSWORD = os.getenv('host_password')
-
-# Security
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-#defualt
-DEFAULT_FROM_EMAIL = os.getenv('defualt_from_email')
-
-
-# For Frontend
-
+# -----------------------------
+# Cross-Origin Resource Sharing (CORS)
+# -----------------------------
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+"""
+Email Configuration
+Handles sending emails and related settings for the application.
+"""
+# Frontend URL for constructing links in emails
+FRONT_END_URL = os.getenv('FRONT_END_URL')
+
+# Email backend configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+# SMTP server settings
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587  # TLS: 587, SSL: 465
+EMAIL_HOST_USER = os.getenv('HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('HOST_PASSWORD')
+
+# Security settings
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+# Default sender email
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

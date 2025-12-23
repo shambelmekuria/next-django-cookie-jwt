@@ -18,7 +18,7 @@ from .serializers import (
     UserSerializer,
     ChangePasswordSerializer,
     ResetPasswordSerializer,
-    PasswordRestConfirmSerializer
+    PasswordRestConfirmSerializer,
 )
 
 # Django Contrib for Password Reset
@@ -27,6 +27,11 @@ from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
+
+# Djano Messages
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils import timezone
 
 
 # Display User Info
@@ -117,37 +122,70 @@ def passoword_change(request):
 def password_reset_request(request):
     serializer = ResetPasswordSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.validated_data["email"]  
-        try:
-            user = User.objects.filter(email=email).first()
-        except User.DoesNotExist:
-            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-       
+        email = serializer.validated_data["email"]
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response(
+                {"message": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        reset_link = f"{settings.FRONTEND_URL}/password-reset?uid={uid}&token={token}"
-        send_mail(
-            subject="Password Reset",
-            message=f"{reset_link}",
-            from_email="shambelmekuria2022@gmail.com", recipient_list=[email])
-        return Response({"message": "The Passord Reset link sent successfully, check spam email"}, status=status.HTTP_200_OK,)
+        reset_link = f"{settings.FRONT_END_URL}/password-reset-confirm?uid={uid}&token={token}"
+        text_content = render_to_string(
+            "email/password-reset.txt",
+            context={
+                "user_name": user.username,
+                "reset_link": reset_link,
+                "expiry_time": timezone.now(),
+            },
+        )
+        html_content = render_to_string(
+            "email/password-reset.html",
+            context={
+                "user_name": user.username,
+                "reset_link": reset_link,
+                "expiry_time": timezone.now(),
+            },
+        )
+        msg = EmailMultiAlternatives(
+            subject="Password Reset Request",
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[email],
+       headers={"List-Unsubscribe": "<mailto:unsub@example.com>"},
+        )
+        msg.attach_alternative(html_content,'text/html')
+        msg.send()
+        return Response(
+            {
+                "message": "We’ve sent a password reset link to your email address."
+            },
+            status=status.HTTP_200_OK,
+        )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Password Reset Confirm API
 @api_view(["POST"])
 def password_reset_confirm(request):
     serializer = PasswordRestConfirmSerializer(data=request.data)
     if serializer.is_valid():
-        uid = urlsafe_base64_decode(serializer.validated_data['uid']).decode()
-        token = serializer.validated_data['token']
-        new_password = serializer.validated_data['new_password']
+        uid = urlsafe_base64_decode(serializer.validated_data["uid"]).decode()
+        token = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
         try:
             user = User.objects.get(id=uid)
         except User.DoesNotExist:
-            return Response({'message': "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         if not default_token_generator.check_token(user, token):
-            return Response({'message': 'Invalid Token'},status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST
+            )
         user.set_password(new_password)
         user.save()
-        return Response({'message': 'Password Change Successfully'}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Password Change Successfully"}, status=status.HTTP_200_OK
+        )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

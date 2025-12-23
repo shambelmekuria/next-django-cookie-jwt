@@ -9,7 +9,7 @@ urlpatterns = [
     path("password-change/", passoword_change, name="test-password-change"),
     path("password-reset/", password_reset_request, name="password-reset"),
     path(
-        "confirm-password-reset/",
+        "password-reset-confirm/",
         password_reset_confirm,
         name="confirm-password-reset/",
     ),

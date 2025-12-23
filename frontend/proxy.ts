@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtDecode } from "jwt-decode";
+import path from 'path';
 
 type decodeTokenValues = {
     exp: number,
@@ -17,23 +18,35 @@ export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Allow login page if no token
-    if (pathname.startsWith('/login') && !access_token) {
+    if ((pathname.startsWith('/login') || pathname.startsWith('/password-reset') || pathname.startsWith('/password-reset-confirm')) && !access_token) {
         return NextResponse.next();
     }
+
 
     // if there is no token , redirect to login
     if (!access_token) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
-    if(access_token && pathname.startsWith('/login')){
+    if (access_token && pathname.startsWith('/login')) {
         return NextResponse.redirect(new URL('/home', request.url));
+    }
+
+    // *******************************
+    // Password Reset Related        |
+    // ******************************
+    if (access_token && pathname.startsWith('/password-reset')) {
+        // /password-reset include /password-reset-confirm and its token
+        const res = NextResponse.next();
+        res.cookies.delete('access-token');
+        res.cookies.delete('refresh-token')
+        return res;
     }
 
     // Token exists  decode/translate/
     let decoded: decodeTokenValues;
     try {
         decoded = jwtDecode<decodeTokenValues>(access_token);
-    } 
+    }
     catch (err) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -42,7 +55,7 @@ export async function proxy(request: NextRequest) {
     if (decoded.exp * 1000 < Date.now()) {
         return NextResponse.rewrite(new URL('/api/auth/refresh/', request.url));
     }
-    
+
     // Can use fetch API instead of rewrite if needed to call refresh endpoint
 
     // Role-based access control using path regex
@@ -64,6 +77,8 @@ export const config = {
         '/admin/:path*',
         '/dashboard/:path*',
         '/home',
-        '/'
+        '/',
+        '/password-reset',
+        '/password-reset-confirm/:path*',
     ]
 }

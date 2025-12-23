@@ -11,6 +11,7 @@ import { z } from "zod";
 import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
 import { DJANGO_BASE_URL } from "@/config/defualt";
 import axios from "axios";
+import Image from "next/image";
 
 const passwordResetRequestForm = z.object({
   email: z.email(),
@@ -19,8 +20,9 @@ const passwordResetRequestForm = z.object({
 type passwordResetRequestValue = z.infer<typeof passwordResetRequestForm>;
 
 export default function PasswordReset() {
-  const [sending, setSending] = useState(false);
-  const [message,setMessage] = useState('')
+  const [sent, setSent] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const form = useForm<passwordResetRequestValue>({
     resolver: zodResolver(passwordResetRequestForm),
     defaultValues: {
@@ -28,16 +30,19 @@ export default function PasswordReset() {
     },
   });
 
-  const onSubmit  = async (data: passwordResetRequestValue) => {
-    try{
-      const reset_link= `${DJANGO_BASE_URL}/api/users/password-reset/`
-      const res = await axios.post(reset_link,{data});
-      if (res){
-        console.log(res.data)
+  const onSubmit = async (data: passwordResetRequestValue) => {
+    try {
+      setSent(true);
+      const reset_link = `${DJANGO_BASE_URL}/api/users/password-reset/`;
+      const res = await axios.post(reset_link, data);
+      if (res) {
+        setSent(false);
+        setMessage(res.data.message);
+        form.reset();
       }
-    }
-    catch{
-
+    } catch (error: any) {
+      setSent(false);
+      setError(error.response?.data.message);
     }
   };
 
@@ -47,11 +52,12 @@ export default function PasswordReset() {
         action=""
         className="bg-muted m-auto h-fit w-full max-w-sm overflow-hidden rounded-[calc(var(--radius)+.125rem)] border shadow-md shadow-zinc-950/5 dark:[--color-muted:var(--color-zinc-900)]"
         onSubmit={form.handleSubmit(onSubmit)}
+        noValidate
       >
         <div className="bg-card -m-px rounded-[calc(var(--radius)+.125rem)] border p-8 pb-6">
           <div>
             <Link href="/" aria-label="go home">
-              <h1>LOGO</h1>
+              <Image src='/mylogo.png' height={80} width={80} alt="Picture of the author" className="rounded-full" />
               {/* <LogoIcon /> */}
             </Link>
             <h1 className="mb-1 mt-4 text-xl font-semibold">
@@ -59,6 +65,16 @@ export default function PasswordReset() {
             </h1>
             <p className="text-sm">Enter your email to receive a reset link</p>
           </div>
+          {message && (
+            <div className="p-3 my-3 text-blue-700 bg-blue-100 rounded-md">
+              {message}
+            </div>
+          )}
+          {error && (
+            <div className="p-3 my-3 text-red-700 bg-red-100 rounded-md">
+              {error}
+            </div>
+          )}
 
           <div className="mt-6 space-y-6">
             <div className="space-y-2">
@@ -75,20 +91,20 @@ export default function PasswordReset() {
                         aria-invalid={fieldState.invalid}
                         {...field}
                         type="email"
-                      
                         id="email"
                         placeholder="Enter your email"
                       />
-                      {fieldState.error && <FieldError errors={[fieldState.error]}/>}
+                      {fieldState.error && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
-                   
                   )}
                 />
               </FieldGroup>
             </div>
 
             <Button className="w-full" type="submit">
-              Send Reset Link
+              {sent ? "Sending" : "Send Reset Link"}
             </Button>
           </div>
 
