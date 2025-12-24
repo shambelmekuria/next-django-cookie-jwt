@@ -22,6 +22,8 @@ import { email, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { fi } from "zod/locales";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { DJANGO_BASE_URL } from "@/config/defualt";
 
 // **********************************
 // Zod Schema                        |
@@ -59,7 +61,9 @@ export function SignupForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [error, setError] = useState("");
+  const [usernameError, setUsernameError] = useState([]);
   const [creating, setCreating] = useState(false);
+  const router = useRouter();
   const form = useForm<SignupInput>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
@@ -71,14 +75,14 @@ export function SignupForm({
   });
 
   const onSubmit = async (data: SignupInput) => {
-    try{
-      const res = await axios.post('/api/auth/register',data)
-      console.log(res.data)
+    try {
+      await axios.post(`${DJANGO_BASE_URL}/api/users/create/`, data);
+      router.push("/login");
+    } catch (error: any) {
+      if (error.response.data["username"]) {
+        setUsernameError(error.response.data["username"]);
+      }
     }
-    catch(error){
-      console.log(error)
-    }
-
   };
   return (
     <div className={cn("flex flex-col gap-4", className)} {...props}>
@@ -109,6 +113,7 @@ export function SignupForm({
                     {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
+                    {usernameError && <FieldError>{usernameError}</FieldError>}
                   </Field>
                 )}
               />

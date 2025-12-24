@@ -46,6 +46,7 @@ def get_user(request):
 @api_view(["POST"])
 def create_user(request):
     serializer = UserSerializer(data=request.data)
+  
     if serializer.is_valid():
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
