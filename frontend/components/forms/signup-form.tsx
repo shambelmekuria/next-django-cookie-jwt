@@ -24,6 +24,7 @@ import { fi } from "zod/locales";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { DJANGO_BASE_URL } from "@/config/defualt";
+import { Eye, EyeOff } from "lucide-react";
 
 // **********************************
 // Zod Schema                        |
@@ -63,6 +64,8 @@ export function SignupForm({
   const [error, setError] = useState("");
   const [usernameError, setUsernameError] = useState([]);
   const [creating, setCreating] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setConfirmShowPassword] = useState(false)
   const router = useRouter();
   const form = useForm<SignupInput>({
     resolver: zodResolver(SignUpSchema),
@@ -76,9 +79,12 @@ export function SignupForm({
 
   const onSubmit = async (data: SignupInput) => {
     try {
+      setCreating(true)
       await axios.post(`${DJANGO_BASE_URL}/api/users/create/`, data);
+      setCreating(false)
       router.push("/login");
     } catch (error: any) {
+      setCreating(false)
       if (error.response.data["username"]) {
         setUsernameError(error.response.data["username"]);
       }
@@ -143,14 +149,26 @@ export function SignupForm({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input
-                      {...field}
-                      id="password"
-                      type="password"
-                      placeholder="Password"
-                      required
-                      aria-invalid={fieldState.invalid}
-                    />
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Password"
+                        required
+                        aria-invalid={fieldState.invalid}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+
                     {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -165,14 +183,22 @@ export function SignupForm({
                     <FieldLabel htmlFor="confirm_password">
                       Confirm Password
                     </FieldLabel>
-                    <Input
-                      {...field}
-                      id="confirm_password"
-                      type="password"
-                      placeholder="Confirm Password"
-                      required
-                      aria-invalid={fieldState.invalid}
-                    />
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        id="confirm_password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm Password"
+                        required
+                        aria-invalid={fieldState.invalid}
+                      />
+                      <Button type="button"
+                        size='icon'
+                        variant='ghost'
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
+                        onClick={() => setConfirmShowPassword(!showConfirmPassword)}
+                      > {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                    </div>
                     {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -181,7 +207,7 @@ export function SignupForm({
               />
 
               <Field>
-                <Button type="submit">Create Account</Button>
+                <Button type="submit">{creating ? "Creating..." : "Create Account"}</Button>
                 <FieldDescription className="text-center">
                   Already have an account? <a href="/login">Sign in</a>
                 </FieldDescription>

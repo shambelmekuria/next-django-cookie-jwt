@@ -125,38 +125,35 @@ def password_reset_request(request):
     if serializer.is_valid():
         email = serializer.validated_data["email"]
         user = User.objects.filter(email=email).first()
-        if not user:
-            return Response(
-                {"message": "User not found"}, status=status.HTTP_404_NOT_FOUND
+        if user is not None:
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_link = f"{settings.FRONT_END_URL}/reset?uid={uid}&token={token}"
+            text_content = render_to_string(
+                "email/password-reset.txt",
+                context={
+                    "user_name": user.username,
+                    "reset_link": reset_link,
+                    "expiry_time": timezone.now(),
+                },
             )
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        reset_link = f"{settings.FRONT_END_URL}/password-reset-confirm?uid={uid}&token={token}"
-        text_content = render_to_string(
-            "email/password-reset.txt",
-            context={
-                "user_name": user.username,
-                "reset_link": reset_link,
-                "expiry_time": timezone.now(),
-            },
-        )
-        html_content = render_to_string(
-            "email/password-reset.html",
-            context={
-                "user_name": user.username,
-                "reset_link": reset_link,
-                "expiry_time": timezone.now(),
-            },
-        )
-        msg = EmailMultiAlternatives(
-            subject="Password Reset Request",
-            body=text_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[email],
-       headers={"List-Unsubscribe": "<mailto:unsub@example.com>"},
-        )
-        msg.attach_alternative(html_content,'text/html')
-        msg.send()
+            html_content = render_to_string(
+                "email/password-reset.html",
+                context={
+                    "user_name": user.username,
+                    "reset_link": reset_link,
+                    "expiry_time": timezone.now(),
+                },
+            )
+            msg = EmailMultiAlternatives(
+                subject="Password Reset Request",
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+        headers={"List-Unsubscribe": "<mailto:unsub@example.com>"},
+            )
+            msg.attach_alternative(html_content,'text/html')
+            msg.send()
         return Response(
             {
                 "message": "We’ve sent a password reset link to your email address."

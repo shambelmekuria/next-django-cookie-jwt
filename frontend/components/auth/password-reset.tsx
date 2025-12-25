@@ -12,6 +12,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
 import { DJANGO_BASE_URL } from "@/config/defualt";
 import axios from "axios";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const passwordResetRequestForm = z.object({
   email: z.email(),
@@ -21,8 +22,8 @@ type passwordResetRequestValue = z.infer<typeof passwordResetRequestForm>;
 
 export default function PasswordReset() {
   const [sent, setSent] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter()
   const form = useForm<passwordResetRequestValue>({
     resolver: zodResolver(passwordResetRequestForm),
     defaultValues: {
@@ -37,8 +38,9 @@ export default function PasswordReset() {
       const res = await axios.post(reset_link, data);
       if (res) {
         setSent(false);
-        setMessage(res.data.message);
         form.reset();
+        router.push('/password-reset/done')
+
       }
     } catch (error: any) {
       setSent(false);
@@ -65,11 +67,6 @@ export default function PasswordReset() {
             </h1>
             <p className="text-sm">Enter your email to receive a reset link</p>
           </div>
-          {message && (
-            <div className="p-3 my-3 text-blue-700 bg-blue-100 rounded-md">
-              {message}
-            </div>
-          )}
           {error && (
             <div className="p-3 my-3 text-red-700 bg-red-100 rounded-md">
               {error}
